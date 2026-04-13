@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Edith · Expense Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0E0A06;--s1:#1A1208;--s2:#221808;--border:#3D2E18;
+  --gold:#C9952A;--gdim:rgba(201,149,42,0.13);
+  --burg:#E05470;--bdim:rgba(139,26,46,0.13);
+  --cream:#F2EBD9;--muted:#7A6545;--muted2:#9E8560;
+  --green:#2E9E6B;--grdim:rgba(46,158,107,0.12);
+  --red:#C0392B;--rdim:rgba(192,57,43,0.12);
+  --r:14px;--rsm:8px
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--cream);min-height:100vh;padding-bottom:100px;overflow-x:hidden}
+
+.hdr{padding:52px 18px 20px;background:linear-gradient(180deg,#050300 0%,var(--bg) 100%);position:relative;overflow:hidden}
+.hdr-glow{position:absolute;top:-80px;right:-60px;width:260px;height:260px;background:radial-gradient(circle,rgba(201,149,42,0.14) 0%,transparent 70%);pointer-events:none}
+.hdr-glow2{position:absolute;bottom:-40px;left:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(139,26,46,0.1) 0%,transparent 70%);pointer-events:none}
+.hdr-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
+.hdr-hi{font-size:10px;color:var(--muted2);letter-spacing:3px;text-transform:uppercase;margin-bottom:4px}
+.hdr-name{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:700;line-height:1.1}
+.hdr-name span{color:var(--gold)}
+.hdr-date{font-size:11px;color:var(--muted);text-align:right;line-height:1.6}
+
+/* PAY PERIOD CARD */
+.pp-card{background:linear-gradient(135deg,var(--s1),var(--s2));border:1px solid var(--border);border-radius:var(--r);padding:16px;position:relative;overflow:hidden}
+.pp-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--burg),var(--gold),var(--burg))}
+.pp-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.pp-lbl{font-size:10px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase}
+.pp-dates{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--gold)}
+.pp-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.pp-stat{background:var(--bg);border-radius:var(--rsm);padding:10px 11px;text-align:center}
+.pp-stat-l{font-size:9px;color:var(--muted2);text-transform:uppercase;letter-spacing:1px;margin-bottom:3px}
+.pp-stat-v{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700}
+
+/* TABS */
+.tabbar{position:sticky;top:0;z-index:100;background:rgba(14,10,6,0.97);backdrop-filter:blur(16px);padding:9px 14px;border-bottom:1px solid var(--border)}
+.tabs{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;padding:7px 15px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;border-radius:20px;cursor:pointer;white-space:nowrap;transition:all .2s}
+.tab.active{background:var(--gold);border-color:var(--gold);color:#0E0A06;font-weight:700}
+.panel{display:none;padding:15px}
+.panel.active{display:block}
+
+.sh{display:flex;align-items:center;justify-content:space-between;margin:20px 0 10px}
+.sh:first-child{margin-top:0}
+.sh-t{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700}
+.badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;background:var(--s2);color:var(--muted2);letter-spacing:.5px}
+.badge.r{background:var(--rdim);color:var(--red)}.badge.g{background:var(--grdim);color:var(--green)}.badge.o{background:var(--gdim);color:var(--gold)}.badge.b{background:var(--bdim);color:var(--burg)}
+
+/* ADD EXPENSE FORM */
+.add-form{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.add-form-title{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:12px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.form-row.full{grid-template-columns:1fr}
+.finp-wrap{display:flex;flex-direction:column;gap:4px}
+.finp-lbl{font-size:10px;color:var(--muted2);letter-spacing:1px;text-transform:uppercase}
+.finp{background:var(--bg);border:1px solid var(--border);border-radius:var(--rsm);padding:10px 12px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:14px;width:100%}
+.finp:focus{outline:none;border-color:var(--gold)}
+select.finp{cursor:pointer}
+.add-btn{width:100%;padding:12px;background:var(--gold);color:#0E0A06;border:none;border-radius:var(--rsm);font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;letter-spacing:.5px}
+.add-btn:active{opacity:.8}
+
+/* BUDGET PROGRESS BARS */
+.cat-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:8px}
+.cat-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.cat-name{font-size:13px;font-weight:600}
+.cat-emoji{font-size:16px;margin-right:6px}
+.cat-amounts{text-align:right}
+.cat-spent{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:700}
+.cat-limit{font-size:10px;color:var(--muted2);margin-top:1px}
+.pbar{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:5px}
+.pfill{height:100%;border-radius:3px;transition:width .4s ease}
+.cat-sub{display:flex;justify-content:space-between;font-size:10px;color:var(--muted2)}
+
+/* TRANSACTION LIST */
+.tx-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.tx-item:last-child{border-bottom:none}
+.tx-emoji{width:34px;height:34px;min-width:34px;border-radius:50%;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:15px}
+.tx-info{flex:1;min-width:0}
+.tx-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tx-meta{font-size:10px;color:var(--muted2);margin-top:1px}
+.tx-amt{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;white-space:nowrap}
+.tx-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:4px;margin-left:4px}
+.tx-del:active{color:var(--red)}
+.empty-state{text-align:center;padding:30px 20px;color:var(--muted2)}
+.empty-state-i{font-size:32px;margin-bottom:8px}
+.empty-state-t{font-size:13px}
+
+/* SUMMARY */
+.sum-row{display:flex;justify-content:space-between;align-items:center;padding:11px 0;border-bottom:1px solid var(--border)}
+.sum-row:last-child{border-bottom:none}
+.sum-l{font-size:12px}.sum-sub{font-size:10px;color:var(--muted2);margin-top:1px}
+.sum-r{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600}
+.sum-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px}
+.sum-hdr{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+.tbar{background:var(--s2);border-radius:var(--rsm);padding:12px 15px;display:flex;justify-content:space-between;align-items:center;margin:6px 0}
+.tbar-l{font-size:12px;color:var(--muted2)}.tbar-v{font-family:'Cormorant Garamond',serif;font-size:20px}
+
+.alert{border-radius:var(--rsm);padding:12px 14px;margin-bottom:10px;display:flex;gap:10px;border-left:3px solid}
+.alert.r{background:var(--rdim);border-color:var(--red)}.alert.y{background:var(--gdim);border-color:var(--gold)}.alert.g{background:var(--grdim);border-color:var(--green)}.alert.b{background:var(--bdim);border-color:var(--burg)}
+.alert-i{font-size:16px;margin-top:1px}
+.alert-t{font-size:12px;font-weight:700;margin-bottom:2px}
+.alert-s{font-size:11px;color:var(--muted2);line-height:1.5}
+
+/* HISTORY PERIOD SELECTOR */
+.period-sel{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;scrollbar-width:none}
+.period-sel::-webkit-scrollbar{display:none}
+.psb{flex:none;padding:6px 14px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:11px;border-radius:20px;cursor:pointer}
+.psb.active{background:var(--burg);border-color:var(--burg);color:#fff;font-weight:700}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:rgba(14,10,6,0.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:10px 6px 22px;display:flex;justify-content:space-around;z-index:200}
+.nb{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:9px;font-weight:500;padding:6px 10px;border-radius:var(--rsm);transition:all .2s;text-transform:uppercase;letter-spacing:.5px}
+.nb.active{color:var(--gold)}
+.nb-i{font-size:20px}
+.div{height:1px;background:var(--border);margin:13px 0}
+.clear-btn{width:100%;padding:11px;background:transparent;border:1px solid var(--border);border-radius:var(--r);color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;margin-top:8px}
+.clear-btn:active{border-color:var(--red);color:var(--red)}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-glow"></div>
+  <div class="hdr-glow2"></div>
+  <div class="hdr-row">
+    <div>
+      <div class="hdr-hi">Expense Tracker</div>
+      <div class="hdr-name">Edith <span>💰</span></div>
+    </div>
+    <div class="hdr-date" id="today-hdr"></div>
+  </div>
+
+  <div class="pp-card">
+    <div class="pp-row">
+      <div>
+        <div class="pp-lbl">Current Pay Period</div>
+        <div class="pp-dates" id="pp-label">Apr 10 – Apr 23, 2026</div>
+      </div>
+      <div style="font-size:22px">📅</div>
+    </div>
+    <div class="pp-grid">
+      <div class="pp-stat">
+        <div class="pp-stat-l">Spent</div>
+        <div class="pp-stat-v" id="pp-spent" style="color:var(--burg)">$0</div>
+      </div>
+      <div class="pp-stat">
+        <div class="pp-stat-l">Budget</div>
+        <div class="pp-stat-v" style="color:var(--gold)">$413</div>
+      </div>
+      <div class="pp-stat">
+        <div class="pp-stat-l">Remaining</div>
+        <div class="pp-stat-v" id="pp-remaining" style="color:var(--green)">$413</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabbar">
+  <div class="tabs">
+    <button class="tab active" onclick="go('log')">➕ Log</button>
+    <button class="tab" onclick="go('overview')">📊 Overview</button>
+    <button class="tab" onclick="go('history')">🗓️ History</button>
+    <button class="tab" onclick="go('alerts')">⚠️ Alerts</button>
+  </div>
+</div>
+
+<!-- ══════ LOG ══════ -->
+<div id="panel-log" class="panel active">
+
+  <div class="add-form">
+    <div class="add-form-title">+ Add Expense</div>
+    <div class="form-row">
+      <div class="finp-wrap">
+        <div class="finp-lbl">Amount</div>
+        <input class="finp" type="number" id="inp-amt" placeholder="$0.00" step="0.01">
+      </div>
+      <div class="finp-wrap">
+        <div class="finp-lbl">Date</div>
+        <input class="finp" type="date" id="inp-date">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="finp-wrap">
+        <div class="finp-lbl">Category</div>
+        <select class="finp" id="inp-cat">
+          <option value="">Select...</option>
+          <option value="gas">⛽ Gas</option>
+          <option value="medical">💊 Medical</option>
+          <option value="subscriptions">📺 Subscriptions</option>
+          <option value="groceries">🛒 Groceries</option>
+          <option value="dining">🍽️ Dining</option>
+          <option value="personal">💈 Personal Care</option>
+          <option value="misc">🎁 Misc / Other</option>
+        </select>
+      </div>
+      <div class="finp-wrap">
+        <div class="finp-lbl">Description</div>
+        <input class="finp" type="text" id="inp-desc" placeholder="e.g. Walmart">
+      </div>
+    </div>
+    <button class="add-btn" onclick="addExpense()">Add Expense</button>
+  </div>
+
+  <div class="sh"><div class="sh-t">This Paycheck</div><div class="badge o" id="tx-count">0 items</div></div>
+  <div id="tx-list">
+    <div class="empty-state"><div class="empty-state-i">📭</div><div class="empty-state-t">No expenses logged yet. Start tracking above.</div></div>
+  </div>
+
+</div>
+
+<!-- ══════ OVERVIEW ══════ -->
+<div id="panel-overview" class="panel">
+
+  <div class="sh"><div class="sh-t">Budget vs Spent</div><div class="badge o">This Period</div></div>
+
+  <!-- Category progress cards will be generated by JS -->
+  <div id="cat-overview"></div>
+
+  <div class="div"></div>
+  <div class="tbar" style="border:1px solid var(--burg)"><div class="tbar-l">Total Variable Spent</div><div class="tbar-v" id="ov-spent" style="color:var(--burg)">$0</div></div>
+  <div class="tbar" style="border:1px solid var(--gold)"><div class="tbar-l">Variable Budget</div><div class="tbar-v" style="color:var(--gold)">$413</div></div>
+  <div class="tbar" style="border:1px solid var(--green)"><div class="tbar-l">Remaining</div><div class="tbar-v" id="ov-remaining" style="color:var(--green)">$413</div></div>
+
+</div>
+
+<!-- ══════ HISTORY ══════ -->
+<div id="panel-history" class="panel">
+
+  <div class="period-sel" id="period-sel"></div>
+  <div id="history-content"></div>
+
+</div>
+
+<!-- ══════ ALERTS ══════ -->
+<div id="panel-alerts" class="panel">
+
+  <div class="sh"><div class="sh-t">Spending Alerts</div></div>
+  <div id="alerts-content">
+    <div class="alert g">
+      <div class="alert-i">✅</div>
+      <div><div class="alert-t">Looking good so far</div><div class="alert-s">Start logging expenses and alerts will appear here if you are approaching or over budget in any category.</div></div>
+    </div>
+  </div>
+
+  <div class="sh" style="margin-top:20px"><div class="sh-t">Budget Limits</div></div>
+  <div id="limit-list"></div>
+
+  <div class="div"></div>
+  <div class="sh"><div class="sh-t">Past Spending (Feb–Mar avg)</div></div>
+  <div class="sum-card">
+    <div class="sum-hdr">Historical Reference</div>
+    <div class="sum-row"><div><div class="sum-l">🍽️ Dining (Feb avg)</div><div class="sum-sub">Budget: $200/mo · Was: $267–$450</div></div><div class="sum-r" style="color:var(--red)">$358 avg</div></div>
+    <div class="sum-row"><div><div class="sum-l">🛒 Groceries (avg)</div><div class="sum-sub">Budget: $250/mo · Was: $171–$215</div></div><div class="sum-r" style="color:var(--green)">$193 avg</div></div>
+    <div class="sum-row"><div><div class="sum-l">💊 Pharmacy (avg)</div><div class="sum-sub">Budget: $80/mo · Was: $115–$230</div></div><div class="sum-r" style="color:var(--red)">$172 avg</div></div>
+    <div class="sum-row"><div><div class="sum-l">💈 Personal Care (avg)</div><div class="sum-sub">Budget: $80/mo · Was: $18–$290</div></div><div class="sum-r" style="color:var(--gold)">$154 avg</div></div>
+  </div>
+
+  <button class="clear-btn" onclick="clearAll()">🗑️ Clear All Expenses (Reset This Period)</button>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bnav">
+  <button class="nb active" onclick="go('log')" id="nav-log"><div class="nb-i">➕</div>Log</button>
+  <button class="nb" onclick="go('overview')" id="nav-overview"><div class="nb-i">📊</div>Overview</button>
+  <button class="nb" onclick="go('history')" id="nav-history"><div class="nb-i">🗓️</div>History</button>
+  <button class="nb" onclick="go('alerts')" id="nav-alerts"><div class="nb-i">⚠️</div>Alerts</button>
+</div>
+
+<script>
+// ── CONSTANTS ──
+const BUDGET = {gas:35,medical:40,subscriptions:33,groceries:125,dining:100,personal:40,misc:40};
+const CAT_META = {
+  gas:{label:'Gas',emoji:'⛽',warn:0.85},
+  medical:{label:'Medical',emoji:'💊',warn:0.85},
+  subscriptions:{label:'Subscriptions',emoji:'📺',warn:0.9},
+  groceries:{label:'Groceries',emoji:'🛒',warn:0.85},
+  dining:{label:'Dining',emoji:'🍽️',warn:0.75},
+  personal:{label:'Personal Care',emoji:'💈',warn:0.75},
+  misc:{label:'Misc / Other',emoji:'🎁',warn:0.75}
+};
+const LS = localStorage;
+const PERIOD_START = new Date('2026-04-10');
+const PERIOD_END = new Date('2026-04-23');
+
+// ── DATE HELPERS ──
+const today = new Date();
+document.getElementById('today-hdr').innerHTML =
+  today.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}) +
+  '<br><span style="font-size:10px;color:var(--muted)">Bi-weekly</span>';
+
+// Pre-fill date input
+const dateInp = document.getElementById('inp-date');
+const fmtDate = d => d.toISOString().slice(0,10);
+dateInp.value = fmtDate(today > PERIOD_END ? PERIOD_END : today);
+
+// ── STORAGE HELPERS ──
+function getExpenses(){ try{ return JSON.parse(LS.getItem('expenses-v2') || '[]'); } catch(e){ return []; } }
+function saveExpenses(arr){ LS.setItem('expenses-v2', JSON.stringify(arr)); }
+
+function getPeriodKey(d){
+  const dt = new Date(d + 'T00:00:00');
+  // compute which biweekly period
+  const diff = Math.floor((dt - PERIOD_START) / (14*24*60*60*1000));
+  const ps = new Date(PERIOD_START); ps.setDate(ps.getDate() + diff*14);
+  const pe = new Date(ps); pe.setDate(pe.getDate() + 13);
+  return ps.toISOString().slice(0,10) + '_' + pe.toISOString().slice(0,10);
+}
+
+function currentPeriodKey(){ return fmtDate(PERIOD_START) + '_' + fmtDate(PERIOD_END); }
+
+// ── ADD EXPENSE ──
+function addExpense(){
+  const amt = parseFloat(document.getElementById('inp-amt').value);
+  const date = document.getElementById('inp-date').value;
+  const cat = document.getElementById('inp-cat').value;
+  const desc = document.getElementById('inp-desc').value.trim();
+
+  if(!amt || amt <= 0){ flashErr('inp-amt'); return; }
+  if(!date){ flashErr('inp-date'); return; }
+  if(!cat){ flashErr('inp-cat'); return; }
+
+  const expenses = getExpenses();
+  expenses.push({id: Date.now(), amt, date, cat, desc: desc || CAT_META[cat].label, period: getPeriodKey(date)});
+  saveExpenses(expenses);
+
+  // Reset
+  document.getElementById('inp-amt').value = '';
+  document.getElementById('inp-cat').value = '';
+  document.getElementById('inp-desc').value = '';
+
+  renderAll();
+}
+
+function flashErr(id){
+  const el = document.getElementById(id);
+  el.style.borderColor = 'var(--red)';
+  setTimeout(()=>el.style.borderColor='var(--border)',1500);
+}
+
+// ── DELETE ──
+function delExpense(id){
+  const expenses = getExpenses().filter(e=>e.id!==id);
+  saveExpenses(expenses);
+  renderAll();
+}
+
+// ── RENDER TRANSACTION LIST ──
+function renderTxList(){
+  const cpk = currentPeriodKey();
+  const expenses = getExpenses().filter(e=>e.period===cpk).sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const el = document.getElementById('tx-list');
+  document.getElementById('tx-count').textContent = expenses.length + ' items';
+
+  if(!expenses.length){
+    el.innerHTML = '<div class="empty-state"><div class="empty-state-i">📭</div><div class="empty-state-t">No expenses yet. Start logging above.</div></div>';
+    return;
+  }
+
+  el.innerHTML = expenses.map(e=>{
+    const meta = CAT_META[e.cat] || {emoji:'💸',label:e.cat};
+    const d = new Date(e.date+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    return `<div class="tx-item">
+      <div class="tx-emoji">${meta.emoji}</div>
+      <div class="tx-info"><div class="tx-name">${e.desc}</div><div class="tx-meta">${meta.label} · ${d}</div></div>
+      <div class="tx-amt" style="color:var(--burg)">$${e.amt.toFixed(2)}</div>
+      <button class="tx-del" onclick="delExpense(${e.id})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+// ── RENDER OVERVIEW ──
+function renderOverview(){
+  const cpk = currentPeriodKey();
+  const expenses = getExpenses().filter(e=>e.period===cpk);
+  const totals = {};
+  Object.keys(BUDGET).forEach(k=>totals[k]=0);
+  expenses.forEach(e=>{ if(totals[e.cat]!==undefined) totals[e.cat]+=e.amt; });
+
+  let totalSpent = 0;
+  const html = Object.keys(BUDGET).map(k=>{
+    const spent = totals[k];
+    totalSpent += spent;
+    const lim = BUDGET[k];
+    const pct = Math.min(100,(spent/lim)*100);
+    const over = spent > lim;
+    const warn = spent >= lim * CAT_META[k].warn && !over;
+    const color = over ? 'var(--red)' : warn ? 'var(--gold)' : 'var(--green)';
+    const barColor = over ? '#C0392B' : warn ? '#C9952A' : '#2E9E6B';
+    const rem = Math.max(0, lim - spent);
+    return `<div class="cat-card">
+      <div class="cat-top">
+        <div><span class="cat-emoji">${CAT_META[k].emoji}</span><span class="cat-name">${CAT_META[k].label}</span></div>
+        <div class="cat-amounts">
+          <div class="cat-spent" style="color:${color}">$${spent.toFixed(0)}</div>
+          <div class="cat-limit">of $${lim} budget</div>
+        </div>
+      </div>
+      <div class="pbar"><div class="pfill" style="width:${pct}%;background:${barColor}"></div></div>
+      <div class="cat-sub"><span>${over ? '🚨 Over by $'+Math.abs(lim-spent).toFixed(0) : '$'+rem.toFixed(0)+' left'}</span><span>${Math.round(pct)}%</span></div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('cat-overview').innerHTML = html;
+  document.getElementById('ov-spent').textContent = '$' + totalSpent.toFixed(0);
+  const rem = Math.max(0, 413 - totalSpent);
+  const remEl = document.getElementById('ov-remaining');
+  remEl.textContent = '$' + rem.toFixed(0);
+  remEl.style.color = rem < 50 ? 'var(--red)' : rem < 100 ? 'var(--gold)' : 'var(--green)';
+}
+
+// ── RENDER HEADER STATS ──
+function renderHeader(){
+  const cpk = currentPeriodKey();
+  const expenses = getExpenses().filter(e=>e.period===cpk);
+  const totalSpent = expenses.reduce((s,e)=>s+e.amt,0);
+  const rem = Math.max(0, 413 - totalSpent);
+  document.getElementById('pp-spent').textContent = '$' + totalSpent.toFixed(0);
+  const remEl = document.getElementById('pp-remaining');
+  remEl.textContent = '$' + rem.toFixed(0);
+  remEl.style.color = rem < 50 ? 'var(--red)' : rem < 100 ? 'var(--gold)' : 'var(--green)';
+}
+
+// ── RENDER HISTORY ──
+function renderHistory(activePeriod){
+  const expenses = getExpenses();
+  // Get unique periods
+  const periods = [...new Set(expenses.map(e=>e.period))].sort((a,b)=>b.localeCompare(a));
+  const cpk = currentPeriodKey();
+  if(!periods.includes(cpk)) periods.unshift(cpk);
+
+  const selEl = document.getElementById('period-sel');
+  selEl.innerHTML = periods.map((p,i)=>{
+    const [s,e] = p.split('_');
+    const ds = new Date(s+'T00:00:00'), de = new Date(e+'T00:00:00');
+    const lbl = ds.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' – ' + de.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    const active = (activePeriod || cpk) === p ? ' active' : '';
+    return `<button class="psb${active}" onclick="renderHistory('${p}')">${lbl}</button>`;
+  }).join('');
+
+  const ap = activePeriod || cpk;
+  const periodExpenses = expenses.filter(e=>e.period===ap).sort((a,b)=>new Date(b.date)-new Date(a.date));
+
+  // Totals for this period
+  const catTotals = {};
+  Object.keys(BUDGET).forEach(k=>catTotals[k]=0);
+  periodExpenses.forEach(e=>{ if(catTotals[e.cat]!==undefined) catTotals[e.cat]+=e.amt; });
+  const grandTotal = periodExpenses.reduce((s,e)=>s+e.amt,0);
+
+  const contentEl = document.getElementById('history-content');
+  if(!periodExpenses.length){
+    contentEl.innerHTML = '<div class="empty-state"><div class="empty-state-i">📭</div><div class="empty-state-t">No expenses for this period.</div></div>';
+    return;
+  }
+
+  const summaryHTML = `<div class="sum-card">
+    <div class="sum-hdr">Category Summary</div>
+    ${Object.keys(BUDGET).filter(k=>catTotals[k]>0).map(k=>`
+    <div class="sum-row">
+      <div><div class="sum-l">${CAT_META[k].emoji} ${CAT_META[k].label}</div></div>
+      <div class="sum-r" style="color:${catTotals[k]>BUDGET[k]?'var(--red)':'var(--cream)'}">$${catTotals[k].toFixed(2)}</div>
+    </div>`).join('')}
+    <div class="sum-row" style="border-top:1px solid var(--gold);margin-top:4px;padding-top:12px">
+      <div><div class="sum-l" style="font-weight:700">Total Spent</div></div>
+      <div class="sum-r" style="color:var(--gold);font-size:20px">$${grandTotal.toFixed(2)}</div>
+    </div>
+  </div>`;
+
+  const txHTML = `<div class="sh"><div class="sh-t">Transactions</div></div>` +
+    `<div style="background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px">` +
+    periodExpenses.map(e=>{
+      const meta = CAT_META[e.cat]||{emoji:'💸',label:e.cat};
+      const d = new Date(e.date+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+      return `<div class="tx-item">
+        <div class="tx-emoji">${meta.emoji}</div>
+        <div class="tx-info"><div class="tx-name">${e.desc}</div><div class="tx-meta">${meta.label} · ${d}</div></div>
+        <div class="tx-amt" style="color:var(--muted2)">$${e.amt.toFixed(2)}</div>
+      </div>`;
+    }).join('') + `</div>`;
+
+  contentEl.innerHTML = summaryHTML + txHTML;
+}
+
+// ── RENDER ALERTS ──
+function renderAlerts(){
+  const cpk = currentPeriodKey();
+  const expenses = getExpenses().filter(e=>e.period===cpk);
+  const totals = {};
+  Object.keys(BUDGET).forEach(k=>totals[k]=0);
+  expenses.forEach(e=>{ if(totals[e.cat]!==undefined) totals[e.cat]+=e.amt; });
+
+  const alertsEl = document.getElementById('alerts-content');
+  const alerts = [];
+
+  Object.keys(BUDGET).forEach(k=>{
+    const spent = totals[k];
+    const lim = BUDGET[k];
+    const pct = spent/lim;
+    if(spent > lim){
+      alerts.push(`<div class="alert r"><div class="alert-i">🚨</div><div><div class="alert-t">${CAT_META[k].label} Over Budget</div><div class="alert-s">Spent $${spent.toFixed(0)} vs $${lim} limit. $${(spent-lim).toFixed(0)} over.</div></div></div>`);
+    } else if(pct >= CAT_META[k].warn){
+      alerts.push(`<div class="alert y"><div class="alert-i">⚠️</div><div><div class="alert-t">${CAT_META[k].label} Almost at Limit</div><div class="alert-s">Spent $${spent.toFixed(0)} of $${lim} budget. $${(lim-spent).toFixed(0)} remaining.</div></div></div>`);
+    }
+  });
+
+  if(!alerts.length){
+    alertsEl.innerHTML = `<div class="alert g"><div class="alert-i">✅</div><div><div class="alert-t">All categories on track</div><div class="alert-s">No categories are over or near their limits. Keep it up.</div></div></div>`;
+  } else {
+    alertsEl.innerHTML = alerts.join('');
+  }
+
+  // Render limit reference
+  document.getElementById('limit-list').innerHTML = `<div class="sum-card">` +
+    Object.keys(BUDGET).map(k=>`
+    <div class="sum-row">
+      <div><div class="sum-l">${CAT_META[k].emoji} ${CAT_META[k].label}</div><div class="sum-sub">Warns at ${Math.round(CAT_META[k].warn*100)}%</div></div>
+      <div class="sum-r" style="color:var(--gold)">$${BUDGET[k]}/pc</div>
+    </div>`).join('') + `</div>`;
+}
+
+// ── CLEAR ──
+function clearAll(){
+  if(confirm('Clear all expenses for the current pay period? This cannot be undone.')){
+    const cpk = currentPeriodKey();
+    const remaining = getExpenses().filter(e=>e.period!==cpk);
+    saveExpenses(remaining);
+    renderAll();
+  }
+}
+
+// ── NAV ──
+const navMap = {log:0,overview:1,history:2,alerts:3};
+function go(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  document.querySelectorAll('.tab')[navMap[name]].classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+  if(name==='history') renderHistory();
+  if(name==='alerts') renderAlerts();
+  window.scrollTo(0,0);
+}
+
+// ── RENDER ALL ──
+function renderAll(){
+  renderHeader();
+  renderTxList();
+  renderOverview();
+  renderAlerts();
+}
+
+renderAll();
+</script>
+</body>
+</html>

@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Edith · Budget & Debt OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0E0A06;--s1:#1A1208;--s2:#221808;--border:#3D2E18;
+  --gold:#C9952A;--gdim:rgba(201,149,42,0.13);
+  --burg:#E05470;--bdim:rgba(139,26,46,0.13);
+  --cream:#F2EBD9;--muted:#7A6545;--muted2:#9E8560;
+  --green:#2E9E6B;--grdim:rgba(46,158,107,0.12);
+  --red:#C0392B;--rdim:rgba(192,57,43,0.12);
+  --blue:#2E6E9E;--bldim:rgba(46,110,158,0.12);
+  --r:14px;--rsm:8px
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--cream);min-height:100vh;padding-bottom:100px;overflow-x:hidden}
+
+/* HEADER */
+.hdr{padding:52px 18px 20px;background:linear-gradient(180deg,#050300 0%,var(--bg) 100%);position:relative;overflow:hidden}
+.hdr-glow{position:absolute;top:-80px;right:-60px;width:260px;height:260px;background:radial-gradient(circle,rgba(201,149,42,0.15) 0%,transparent 70%);pointer-events:none}
+.hdr-glow2{position:absolute;top:-40px;left:-60px;width:200px;height:200px;background:radial-gradient(circle,rgba(139,26,46,0.1) 0%,transparent 70%);pointer-events:none}
+.hdr-row{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px}
+.hdr-hi{font-size:10px;color:var(--muted2);letter-spacing:3px;text-transform:uppercase;margin-bottom:4px}
+.hdr-name{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:700;line-height:1.1}
+.hdr-name span{color:var(--gold)}
+.hdr-date{font-size:11px;color:var(--muted);text-align:right;margin-top:2px;line-height:1.6}
+
+/* NET WORTH CARD */
+.nw{background:linear-gradient(135deg,var(--s1),var(--s2));border:1px solid var(--border);border-radius:var(--r);padding:18px;position:relative;overflow:hidden}
+.nw::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--burg),var(--gold),var(--burg))}
+.nw-lbl{font-size:10px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;margin-bottom:5px}
+.nw-amt{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:700;line-height:1;margin-bottom:4px}
+.nw-sub{font-size:11px;color:var(--muted2);margin-bottom:14px}
+.nw-bar{height:7px;background:var(--border);border-radius:4px;overflow:hidden;display:flex;margin-bottom:8px}
+.nw-red{height:100%;background:var(--burg);border-radius:4px 0 0 4px}
+.nw-grn{height:100%;background:var(--green);border-radius:0 4px 4px 0}
+.nw-legs{display:flex;justify-content:space-between;font-size:10px;color:var(--muted2);margin-bottom:14px}
+.nw-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.nw-stat{background:var(--bg);border-radius:var(--rsm);padding:10px 12px}
+.nw-stat-l{font-size:10px;color:var(--muted2);margin-bottom:2px}
+.nw-stat-v{font-size:15px;font-weight:700}
+
+/* TABS */
+.tabbar{position:sticky;top:0;z-index:100;background:rgba(14,10,6,0.97);backdrop-filter:blur(16px);padding:9px 14px;border-bottom:1px solid var(--border)}
+.tabs{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;padding:7px 15px;border:1px solid var(--border);background:transparent;color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;border-radius:20px;cursor:pointer;white-space:nowrap;transition:all .2s}
+.tab.active{background:var(--gold);border-color:var(--gold);color:#0E0A06;font-weight:700}
+.panel{display:none;padding:15px}
+.panel.active{display:block}
+
+/* SECTION HEADERS */
+.sh{display:flex;align-items:center;justify-content:space-between;margin:20px 0 10px}
+.sh:first-child{margin-top:0}
+.sh-t{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700}
+.badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;background:var(--s2);color:var(--muted2);letter-spacing:.5px}
+.badge.r{background:var(--rdim);color:var(--red)}.badge.g{background:var(--grdim);color:var(--green)}.badge.o{background:var(--gdim);color:var(--gold)}.badge.b{background:var(--bdim);color:var(--burg)}
+
+/* ALERTS */
+.alert{border-radius:var(--rsm);padding:12px 14px;margin-bottom:10px;display:flex;gap:10px;border-left:3px solid}
+.alert.r{background:var(--rdim);border-color:var(--red)}.alert.y{background:var(--gdim);border-color:var(--gold)}.alert.g{background:var(--grdim);border-color:var(--green)}.alert.b{background:var(--bdim);border-color:var(--burg)}
+.alert-i{font-size:16px;margin-top:1px}
+.alert-t{font-size:12px;font-weight:700;margin-bottom:2px}
+.alert-s{font-size:11px;color:var(--muted2);line-height:1.5}
+
+/* HERO CARD */
+.hero{background:linear-gradient(135deg,var(--burg),#5C0F1E);border-radius:var(--r);padding:18px;margin-bottom:12px;position:relative;overflow:hidden}
+.hero::after{content:'';position:absolute;bottom:-25px;right:-25px;width:100px;height:100px;background:rgba(255,255,255,0.05);border-radius:50%}
+.hero-l{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:3px}
+.hero-v{font-family:'Cormorant Garamond',serif;font-size:34px;font-weight:700;color:#fff}
+.hero-s{font-size:11px;color:rgba(255,255,255,.65);margin-top:3px}
+
+/* GRID CARDS */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.gc{background:var(--s1);border:1px solid var(--border);border-radius:var(--rsm);padding:13px;border-top:3px solid var(--gold)}
+.gc.b{border-top-color:var(--burg)}.gc.g{border-top-color:var(--green)}.gc.r{border-top-color:var(--red)}
+.gc-l{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted2);margin-bottom:3px}
+.gc-v{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700}
+.gc-s{font-size:10px;color:var(--muted2);margin-top:2px}
+
+/* CHECKLIST CARDS */
+.cc{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:8px;transition:all .2s}
+.cc.done{opacity:.4}
+.cc-row{display:flex;align-items:center;gap:11px}
+.chkbtn{width:26px;height:26px;min-width:26px;border-radius:50%;border:1.5px solid var(--border);background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent;transition:all .2s}
+.chkbtn.on{background:var(--green);border-color:var(--green);color:#fff}
+.cc-info{flex:1;min-width:0}
+.cc-n{font-size:14px;font-weight:600;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis}
+.cc-s{font-size:11px;color:var(--muted2);line-height:1.4}
+.cc-a{font-family:'Cormorant Garamond',serif;font-size:19px;white-space:nowrap}
+.cc-a.o{color:var(--gold)}.cc-a.g{color:var(--green)}.cc-a.r{color:var(--red)}.cc-a.b{color:var(--burg)}
+.done .cc-n{text-decoration:line-through;color:var(--muted)}.done .cc-a{color:var(--muted)}
+
+/* DEBT CARDS */
+.dc{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:15px;margin-bottom:9px}
+.dc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:11px}
+.dc-name{font-size:14px;font-weight:700;margin-bottom:3px}
+.dc-meta{font-size:11px;color:var(--muted2)}
+.dc-bal{font-family:'Cormorant Garamond',serif;font-size:24px;text-align:right}
+.dc-bal-l{font-size:10px;color:var(--muted2);text-align:right}
+.pbar{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:7px}
+.pfill{height:100%;border-radius:3px;transition:width .6s ease;background:var(--gold)}
+.pfill.g{background:var(--green)}.pfill.r{background:var(--red)}.pfill.b{background:var(--burg)}
+.dc-foot{display:flex;justify-content:space-between;font-size:11px}
+.dc-fl{color:var(--muted2)}.dc-fr{color:var(--gold);font-weight:600}
+.payrow{display:flex;gap:7px;margin-top:11px;padding-top:11px;border-top:1px solid var(--border)}
+.payinp{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:var(--rsm);padding:8px 11px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:14px}
+.payinp:focus{outline:none;border-color:var(--gold)}
+.paybtn{background:var(--gold);color:#0E0A06;border:none;border-radius:var(--rsm);padding:8px 13px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;cursor:pointer}
+
+/* TAGS */
+.tag{display:inline-block;font-size:9px;font-weight:700;padding:2px 6px;border-radius:20px;margin-left:4px;vertical-align:middle}
+.tag.r{background:var(--rdim);color:var(--red)}.tag.g{background:var(--grdim);color:var(--green)}.tag.o{background:var(--gdim);color:var(--gold)}.tag.b{background:var(--bdim);color:var(--burg)}
+
+/* BUDGET ROWS */
+.tbar{background:var(--s2);border-radius:var(--rsm);padding:12px 15px;display:flex;justify-content:space-between;align-items:center;margin:6px 0}
+.tbar-l{font-size:12px;color:var(--muted2)}.tbar-v{font-family:'Cormorant Garamond',serif;font-size:20px}
+.brow{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.brow:last-child{border-bottom:none}
+.brow-l{font-size:13px}.brow-r{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600}
+.brow-sub{font-size:10px;color:var(--muted2);margin-top:1px}
+.bsec{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px}
+.bsec-hdr{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.bsec-hdr.burg{color:var(--burg)}
+
+/* AVALANCHE RECOMMENDATION BOX */
+.rec-box{background:linear-gradient(135deg,#0F1A0A,#152210);border:1.5px solid var(--green);border-radius:var(--r);padding:16px;margin-bottom:12px}
+.rec-title{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:10px;font-weight:700}
+.rec-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid rgba(46,158,107,0.15)}
+.rec-row:last-child{border-bottom:none}
+.rec-left{flex:1}.rec-name{font-size:13px;font-weight:600;margin-bottom:2px}.rec-desc{font-size:10px;color:var(--muted2)}
+.rec-amt{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--green);margin-left:12px}
+.step-num{width:22px;height:22px;min-width:22px;border-radius:50%;background:var(--grdim);border:1px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--green);margin-right:10px}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:rgba(14,10,6,0.97);backdrop-filter:blur(20px);border-top:1px solid var(--border);padding:10px 6px 22px;display:flex;justify-content:space-around;z-index:200}
+.nb{display:flex;flex-direction:column;align-items:center;gap:3px;background:none;border:none;cursor:pointer;color:var(--muted2);font-family:'DM Sans',sans-serif;font-size:9px;font-weight:500;padding:6px 10px;border-radius:var(--rsm);transition:all .2s;text-transform:uppercase;letter-spacing:.5px}
+.nb.active{color:var(--gold)}
+.nb-i{font-size:20px}
+.div{height:1px;background:var(--border);margin:13px 0}
+.method-badge{background:linear-gradient(135deg,var(--burg),#5C0F1E);border-radius:var(--rsm);padding:12px 14px;margin-bottom:12px}
+.method-badge-t{font-size:11px;font-weight:700;color:var(--cream);margin-bottom:3px}
+.method-badge-s{font-size:10px;color:rgba(255,255,255,.55);line-height:1.5}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-glow"></div>
+  <div class="hdr-glow2"></div>
+  <div class="hdr-row">
+    <div>
+      <div class="hdr-hi">Budget &amp; Debt OS</div>
+      <div class="hdr-name">Hey, <span>Edith</span> 👋</div>
+    </div>
+    <div class="hdr-date" id="today"></div>
+  </div>
+  <div class="nw">
+    <div class="nw-lbl">Net Worth Snapshot</div>
+    <div class="nw-amt" id="nw-val" style="color:var(--red)">-$222,341</div>
+    <div class="nw-sub">Every payment moves this number up ↑</div>
+    <div class="nw-bar">
+      <div class="nw-red" style="width:98.3%"></div>
+      <div class="nw-grn" style="width:1.7%"></div>
+    </div>
+    <div class="nw-legs"><span>Debt $225,145</span><span>Assets ~$1,804</span></div>
+    <div class="nw-grid">
+      <div class="nw-stat"><div class="nw-stat-l">Non-Mortgage Debt</div><div class="nw-stat-v" id="focus-debt" style="color:var(--burg)">$60,923</div></div>
+      <div class="nw-stat"><div class="nw-stat-l">Assets</div><div class="nw-stat-v" style="color:var(--green)">E-Fund $1,000 + Roth $804</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabbar">
+  <div class="tabs">
+    <button class="tab active" onclick="go('home')">🏠 Home</button>
+    <button class="tab" onclick="go('paycheck')">💵 Paycheck</button>
+    <button class="tab" onclick="go('debts')">📊 Debts</button>
+    <button class="tab" onclick="go('budget')">📋 Budget</button>
+    <button class="tab" onclick="go('strategy')">🎯 Strategy</button>
+  </div>
+</div>
+
+<!-- ══════ HOME ══════ -->
+<div id="panel-home" class="panel active">
+
+  <div class="alert y">
+    <div class="alert-i">🔥</div>
+    <div>
+      <div class="alert-t">Sam's Club $28 · Kill It This Paycheck</div>
+      <div class="alert-s">JPMCB $28 at 27.3% — smallest balance, highest APR group. Wipe it out immediately. One less account.</div>
+    </div>
+  </div>
+
+  <div class="alert g">
+    <div class="alert-i">✅</div>
+    <div>
+      <div class="alert-t">Roth IRA Active · $117/paycheck</div>
+      <div class="alert-s">$804 balance and growing. Keep it. This is your future self being taken care of while you pay down debt.</div>
+    </div>
+  </div>
+
+  <div class="alert b">
+    <div class="alert-i">📌</div>
+    <div>
+      <div class="alert-t">Paid April 10 · Next Paycheck April 24</div>
+      <div class="alert-s">14 days to execute the plan. Everything below is your roadmap.</div>
+    </div>
+  </div>
+
+  <div class="sh"><div class="sh-t">Paycheck Snapshot</div><div class="badge o">Apr 10</div></div>
+  <div class="g2">
+    <div class="gc"><div class="gc-l">Total Income</div><div class="gc-v" style="color:var(--gold)">$2,916</div><div class="gc-s">Net + sister $200</div></div>
+    <div class="gc b"><div class="gc-l">Fixed Expenses</div><div class="gc-v" style="color:var(--burg)">$2,395</div><div class="gc-s">Housing → tithes</div></div>
+    <div class="gc g"><div class="gc-l">Variable Budget</div><div class="gc-v" style="color:var(--green)">$413</div><div class="gc-s">Gas to misc</div></div>
+    <div class="gc r"><div class="gc-l">Remaining</div><div class="gc-v" style="color:var(--gold)">$108</div><div class="gc-s">For debt attack</div></div>
+  </div>
+
+  <div class="sh"><div class="sh-t">Priority Actions</div><div class="badge o" id="home-prog">0 of 4</div></div>
+  <div class="cc" id="ha1"><div class="cc-row"><button class="chkbtn" onclick="chk('ha1','home-prog',4)" id="btn-ha1">✓</button><div class="cc-info"><div class="cc-n">Pay off JPMCB $28 · right now</div><div class="cc-s">27.3% APR · smallest debt · close it out this week</div></div><div class="cc-a b">$28</div></div></div>
+  <div class="cc" id="ha2"><div class="cc-row"><button class="chkbtn" onclick="chk('ha2','home-prog',4)" id="btn-ha2">✓</button><div class="cc-info"><div class="cc-n">Pay Sam's Club minimum + extra</div><div class="cc-s">$297 at 28.9% — highest APR. Pay min + whatever is left</div></div><div class="cc-a b">$297</div></div></div>
+  <div class="cc" id="ha3"><div class="cc-row"><button class="chkbtn" onclick="chk('ha3','home-prog',4)" id="btn-ha3">✓</button><div class="cc-info"><div class="cc-n">Do NOT touch the Roth IRA</div><div class="cc-s">Keep $117/paycheck going in. Time in market beats everything.</div></div></div></div>
+  <div class="cc" id="ha4"><div class="cc-row"><button class="chkbtn" onclick="chk('ha4','home-prog',4)" id="btn-ha4">✓</button><div class="cc-info"><div class="cc-n">Review dining spend vs $100 limit</div><div class="cc-s">This was the biggest leak in Feb/March. Stay on target.</div></div></div></div>
+
+</div>
+
+<!-- ══════ PAYCHECK ══════ -->
+<div id="panel-paycheck" class="panel">
+
+  <div class="hero">
+    <div class="hero-l">Total Available · Per Paycheck</div>
+    <div class="hero-v">$2,916</div>
+    <div class="hero-s">$2,716 net pay + $200 from sister · bi-weekly</div>
+  </div>
+
+  <div class="g2">
+    <div class="gc"><div class="gc-l">Fixed Locked</div><div class="gc-v" style="color:var(--burg)">$2,395</div><div class="gc-s">82.1% of paycheck</div></div>
+    <div class="gc g"><div class="gc-l">Variable Target</div><div class="gc-v" style="color:var(--green)">$413</div><div class="gc-s">14.2% of paycheck</div></div>
+  </div>
+
+  <div class="sh"><div class="sh-t">Paycheck Checklist</div><div class="badge" id="pc-prog">0 of 5</div></div>
+
+  <div class="cc" id="pc1"><div class="cc-row"><button class="chkbtn" onclick="chk('pc1','pc-prog',5)" id="btn-pc1">✓</button><div class="cc-info"><div class="cc-n">Mortgage <span class="tag b">AUTO</span></div><div class="cc-s">Your $651 + Orie $300 = $951/paycheck · $1,902/mo</div></div><div class="cc-a o">$651</div></div></div>
+  <div class="cc" id="pc2"><div class="cc-row"><button class="chkbtn" onclick="chk('pc2','pc-prog',5)" id="btn-pc2">✓</button><div class="cc-info"><div class="cc-n">Car + Loan <span class="tag b">AUTO</span></div><div class="cc-s">Car $300 + SoFi loan $320 = $620/paycheck</div></div><div class="cc-a o">$620</div></div></div>
+  <div class="cc" id="pc3"><div class="cc-row"><button class="chkbtn" onclick="chk('pc3','pc-prog',5)" id="btn-pc3">✓</button><div class="cc-info"><div class="cc-n">Tithes 🔒 <span class="tag r">LOCKED</span></div><div class="cc-s">Untouchable · full $543 every paycheck</div></div><div class="cc-a r">$543</div></div></div>
+  <div class="cc" id="pc4"><div class="cc-row"><button class="chkbtn" onclick="chk('pc4','pc-prog',5)" id="btn-pc4">✓</button><div class="cc-info"><div class="cc-n">Roth IRA <span class="tag g">INVEST</span></div><div class="cc-s">$117/paycheck → keep building</div></div><div class="cc-a g">$117</div></div></div>
+  <div class="cc" id="pc5"><div class="cc-row"><button class="chkbtn" onclick="chk('pc5','pc-prog',5)" id="btn-pc5">✓</button><div class="cc-info"><div class="cc-n">Credit Card Attack <span class="tag r">PRIORITY</span></div><div class="cc-s">Pay Sam's Club + JPMCB big one this cycle</div></div><div class="cc-a b">$325+</div></div></div>
+
+  <div class="div"></div>
+  <div class="tbar"><div class="tbar-l">Total Fixed (per paycheck)</div><div class="tbar-v" style="color:var(--burg)">$2,395</div></div>
+  <div class="tbar"><div class="tbar-l">Variable Budget Target</div><div class="tbar-v" style="color:var(--green)">$413</div></div>
+  <div class="tbar" style="border:1px solid var(--gold)"><div class="tbar-l">Remaining for Debt Attack</div><div class="tbar-v" style="color:var(--gold)">$108</div></div>
+
+</div>
+
+<!-- ══════ DEBTS ══════ -->
+<div id="panel-debts" class="panel">
+
+  <div class="method-badge">
+    <div class="method-badge-t">🔥 Avalanche Method Recommended</div>
+    <div class="method-badge-s">Attack highest APR first. You save more in interest vs snowball. Sam's Club 28.9% is target #1 after wiping the $28.</div>
+  </div>
+
+  <!-- JPMCB $28 -->
+  <div class="dc">
+    <div class="dc-top">
+      <div><div class="dc-name">JPMCB Card <span class="tag r">KILL NOW</span></div><div class="dc-meta">27.30% APR · $28 min</div></div>
+      <div><div class="dc-bal" id="bal-jpmcb28" style="color:var(--green)">$28</div><div class="dc-bal-l">remaining</div></div>
+    </div>
+    <div class="pbar"><div class="pfill g" id="pf-jpmcb28" style="width:99%"></div></div>
+    <div class="dc-foot"><div class="dc-fl">Interest/mo: $0.64 · ~$0 at 26.75%</div><div class="dc-fr">Pay off TODAY</div></div>
+    <div class="payrow"><input class="payinp" type="number" placeholder="Log payment" id="pay-jpmcb28"><button class="paybtn" onclick="logPay('jpmcb28',28)">Log ✓</button></div>
+  </div>
+
+  <!-- Sam's Club -->
+  <div class="dc">
+    <div class="dc-top">
+      <div><div class="dc-name">Sam's Club Mastercard <span class="tag r">#1 PRIORITY</span></div><div class="dc-meta">28.90% APR · Highest rate</div></div>
+      <div><div class="dc-bal" id="bal-sams" style="color:var(--burg)">$297</div><div class="dc-bal-l">remaining</div></div>
+    </div>
+    <div class="pbar"><div class="pfill b" id="pf-sams" style="width:70%"></div></div>
+    <div class="dc-foot"><div class="dc-fl">Interest/mo: ~$7.15 · Highest APR</div><div class="dc-fr">After $28 done → attack this</div></div>
+    <div class="payrow"><input class="payinp" type="number" placeholder="Log payment" id="pay-sams"><button class="paybtn" onclick="logPay('sams',297)">Log ✓</button></div>
+  </div>
+
+  <!-- JPMCB $5,501 -->
+  <div class="dc">
+    <div class="dc-top">
+      <div><div class="dc-name">JPMCB Card <span class="tag b">#2 PRIORITY</span></div><div class="dc-meta">26.75% APR · $5,501</div></div>
+      <div><div class="dc-bal" id="bal-jpmcb" style="color:var(--burg)">$5,501</div><div class="dc-bal-l">remaining</div></div>
+    </div>
+    <div class="pbar"><div class="pfill r" id="pf-jpmcb" style="width:88%"></div></div>
+    <div class="dc-foot"><div class="dc-fl">Interest/mo: ~$122.59</div><div class="dc-fr">~$200/paycheck clears in ~16 mo</div></div>
+    <div class="payrow"><input class="payinp" type="number" placeholder="Log payment" id="pay-jpmcb"><button class="paybtn" onclick="logPay('jpmcb',5501)">Log ✓</button></div>
+  </div>
+
+  <!-- SoFi -->
+  <div class="dc">
+    <div class="dc-top">
+      <div><div class="dc-name">SoFi Personal Loan</div><div class="dc-meta">11.52% APR · $638.14/mo</div></div>
+      <div><div class="dc-bal" id="bal-sofi" style="color:var(--red)">$27,158</div><div class="dc-bal-l">remaining</div></div>
+    </div>
+    <div class="pbar"><div class="pfill" id="pf-sofi" style="width:12%"></div></div>
+    <div class="dc-foot"><div class="dc-fl">Interest/mo: ~$261/mo · Long term</div><div class="dc-fr">Pay minimum · attack CCs first</div></div>
+    <div class="payrow"><input class="payinp" type="number" placeholder="Log payment" id="pay-sofi"><button class="paybtn" onclick="logPay('sofi',27158)">Log ✓</button></div>
+  </div>
+
+  <!-- Car -->
+  <div class="dc">
+    <div class="dc-top">
+      <div><div class="dc-name">Auto Loan</div><div class="dc-meta">7.40% APR · $600/mo</div></div>
+      <div><div class="dc-bal" id="bal-car" style="color:var(--gold)">$27,941</div><div class="dc-bal-l">remaining</div></div>
+    </div>
+    <div class="pbar"><div class="pfill" id="pf-car" style="width:10%"></div></div>
+    <div class="dc-foot"><div class="dc-fl">Interest/mo: ~$172/mo · Manageable</div><div class="dc-fr">Pay minimum for now</div></div>
+    <div class="payrow"><input class="payinp" type="number" placeholder="Log payment" id="pay-car"><button class="paybtn" onclick="logPay('car',27941)">Log ✓</button></div>
+  </div>
+
+  <div class="tbar" style="border:1px solid var(--burg);margin-top:12px"><div class="tbar-l">Non-Mortgage Total (tracked here)</div><div class="tbar-v" id="debt-total" style="color:var(--burg)">$60,925</div></div>
+  <div class="tbar" style="margin-top:4px"><div class="tbar-l">Monthly interest burn (CCs)</div><div class="tbar-v" style="color:var(--red)">~$130/mo</div></div>
+
+</div>
+
+<!-- ══════ BUDGET ══════ -->
+<div id="panel-budget" class="panel">
+
+  <div class="hero" style="background:linear-gradient(135deg,#1A1208,#3D2E18)">
+    <div class="hero-l">Per Paycheck · Bi-Weekly</div>
+    <div class="hero-v" style="color:var(--gold)">$2,916</div>
+    <div class="hero-s" style="color:var(--muted2)">$2,716 net + $200 sister · every 2 weeks</div>
+  </div>
+
+  <div class="bsec">
+    <div class="bsec-hdr">💰 Income</div>
+    <div class="brow"><div><div class="brow-l">Net Pay</div><div class="brow-sub">Direct deposit · bi-weekly</div></div><div class="brow-r" style="color:var(--gold)">$2,716</div></div>
+    <div class="brow"><div><div class="brow-l">Sister Contribution</div><div class="brow-sub">$400/mo → $200/paycheck</div></div><div class="brow-r" style="color:var(--gold)">$200</div></div>
+    <div class="brow" style="border-top:1px solid var(--gold);margin-top:4px;padding-top:10px"><div><div class="brow-l" style="font-weight:700">TOTAL</div></div><div class="brow-r" style="color:var(--gold);font-size:20px">$2,916</div></div>
+  </div>
+
+  <div class="bsec">
+    <div class="bsec-hdr burg">🔒 Fixed &amp; Locked Expenses</div>
+    <div class="brow"><div><div class="brow-l">Mortgage (your share)</div><div class="brow-sub">$1,302/mo ÷ 2</div></div><div class="brow-r" style="color:var(--burg)">$651</div></div>
+    <div class="brow"><div><div class="brow-l">HOA</div><div class="brow-sub">$242/mo ÷ 2</div></div><div class="brow-r">$121</div></div>
+    <div class="brow"><div><div class="brow-l">Car Payment</div><div class="brow-sub">$600/mo ÷ 2</div></div><div class="brow-r">$300</div></div>
+    <div class="brow"><div><div class="brow-l">SoFi Loan</div><div class="brow-sub">$640/mo ÷ 2</div></div><div class="brow-r">$320</div></div>
+    <div class="brow"><div><div class="brow-l">Phones</div><div class="brow-sub">$220/mo ÷ 2</div></div><div class="brow-r">$110</div></div>
+    <div class="brow"><div><div class="brow-l">Utilities</div><div class="brow-sub">$400/mo ÷ 2</div></div><div class="brow-r">$200</div></div>
+    <div class="brow"><div><div class="brow-l">Grandma Support 🔒</div><div class="brow-sub">Family obligation</div></div><div class="brow-r">$150</div></div>
+    <div class="brow"><div><div class="brow-l">Tithes 🔒</div><div class="brow-sub">UNTOUCHABLE · full per paycheck</div></div><div class="brow-r" style="color:var(--red)">$543</div></div>
+    <div class="brow" style="border-top:1px solid var(--burg);margin-top:4px;padding-top:10px"><div><div class="brow-l" style="font-weight:700">SUBTOTAL FIXED</div></div><div class="brow-r" style="color:var(--burg);font-size:20px">$2,395</div></div>
+  </div>
+
+  <div class="bsec">
+    <div class="bsec-hdr" style="color:var(--green)">📊 Variable Targets</div>
+    <div class="brow"><div><div class="brow-l">Gas</div><div class="brow-sub">Fill up as needed</div></div><div class="brow-r">$35</div></div>
+    <div class="brow"><div><div class="brow-l">Medical</div><div class="brow-sub">Co-pays, prescriptions</div></div><div class="brow-r">$40</div></div>
+    <div class="brow"><div><div class="brow-l">Subscriptions</div><div class="brow-sub">Active&amp;Fit + others ÷ 2</div></div><div class="brow-r">$33</div></div>
+    <div class="brow"><div><div class="brow-l">Groceries</div><div class="brow-sub">~$125 per paycheck</div></div><div class="brow-r">$125</div></div>
+    <div class="brow"><div><div class="brow-l">⚠️ Dining</div><div class="brow-sub">MAX $100 — was way over in Feb/Mar</div></div><div class="brow-r" style="color:var(--gold)">$100</div></div>
+    <div class="brow"><div><div class="brow-l">⚠️ Personal Care</div><div class="brow-sub">Nails/threading — $40 limit</div></div><div class="brow-r" style="color:var(--gold)">$40</div></div>
+    <div class="brow"><div><div class="brow-l">⚠️ Misc / Other</div><div class="brow-sub">Coffee, random — hard limit</div></div><div class="brow-r" style="color:var(--gold)">$40</div></div>
+    <div class="brow" style="border-top:1px solid var(--green);margin-top:4px;padding-top:10px"><div><div class="brow-l" style="font-weight:700">SUBTOTAL VARIABLE</div></div><div class="brow-r" style="color:var(--green);font-size:20px">$413</div></div>
+  </div>
+
+  <div class="tbar" style="border:1px solid var(--gold)"><div class="tbar-l">Total Expenses / Paycheck</div><div class="tbar-v" style="color:var(--burg)">$2,808</div></div>
+  <div class="tbar" style="border:1px solid var(--gold)"><div class="tbar-l">Remaining for Debt Attack</div><div class="tbar-v" style="color:var(--gold)">$108</div></div>
+
+</div>
+
+<!-- ══════ STRATEGY ══════ -->
+<div id="panel-strategy" class="panel">
+
+  <div class="sh"><div class="sh-t">Why Avalanche for Edith</div></div>
+
+  <div class="alert y">
+    <div class="alert-i">🧠</div>
+    <div>
+      <div class="alert-t">Avalanche vs Snowball</div>
+      <div class="alert-s">Snowball = pay smallest balance first (feels good, costs more). Avalanche = pay highest APR first (saves the most money). For Edith, the CCs are 26–29% APR. That's expensive. Avalanche wins here.</div>
+    </div>
+  </div>
+
+  <div class="rec-box">
+    <div class="rec-title">✅ Avalanche Attack Order</div>
+    <div class="rec-row">
+      <div class="step-num">1</div>
+      <div class="rec-left"><div class="rec-name">JPMCB $28 · 27.3% APR</div><div class="rec-desc">One payment, done forever. Pay this week.</div></div>
+      <div class="rec-amt">$28</div>
+    </div>
+    <div class="rec-row">
+      <div class="step-num">2</div>
+      <div class="rec-left"><div class="rec-name">Sam's Club · 28.9% APR</div><div class="rec-desc">Highest rate, only $297 left. Should be gone in 1 paycheck.</div></div>
+      <div class="rec-amt">$297</div>
+    </div>
+    <div class="rec-row">
+      <div class="step-num">3</div>
+      <div class="rec-left"><div class="rec-name">JPMCB $5,501 · 26.75% APR</div><div class="rec-desc">Pay min + ALL freed-up cash. ~$200/paycheck clears this in ~16 months.</div></div>
+      <div class="rec-amt">$5,501</div>
+    </div>
+    <div class="rec-row">
+      <div class="step-num">4</div>
+      <div class="rec-left"><div class="rec-name">SoFi · 11.52% APR</div><div class="rec-desc">Pay minimum only while killing CCs. Revisit after step 3.</div></div>
+      <div class="rec-amt">$27,158</div>
+    </div>
+    <div class="rec-row">
+      <div class="step-num">5</div>
+      <div class="rec-left"><div class="rec-name">Auto Loan · 7.4% APR</div><div class="rec-desc">Lowest rate. Minimum payment, no extra. Last priority.</div></div>
+      <div class="rec-amt">$27,941</div>
+    </div>
+  </div>
+
+  <div class="bsec">
+    <div class="bsec-hdr">💡 The Math on Dining</div>
+    <div class="brow"><div><div class="brow-l">Feb dining spend</div></div><div class="brow-r" style="color:var(--red)">$267</div></div>
+    <div class="brow"><div><div class="brow-l">Mar dining spend</div></div><div class="brow-r" style="color:var(--red)">$450</div></div>
+    <div class="brow"><div><div class="brow-l">Budget target</div></div><div class="brow-r" style="color:var(--gold)">$200/mo</div></div>
+    <div class="brow"><div><div class="brow-l">March overage alone</div></div><div class="brow-r" style="color:var(--burg)">$250</div></div>
+    <div class="brow"><div><div class="brow-l" style="font-weight:700">That $250 toward JPMCB instead</div><div class="brow-sub">Saves ~$560 in interest over the payoff period</div></div><div class="brow-r" style="color:var(--green)">+$560 saved</div></div>
+  </div>
+
+  <div class="bsec">
+    <div class="bsec-hdr" style="color:var(--blue)">📈 If She Frees $200/Paycheck for JPMCB</div>
+    <div class="brow"><div><div class="brow-l">Balance</div></div><div class="brow-r">$5,501</div></div>
+    <div class="brow"><div><div class="brow-l">Extra payment/paycheck</div></div><div class="brow-r">$200</div></div>
+    <div class="brow"><div><div class="brow-l">Monthly payment</div></div><div class="brow-r">$400</div></div>
+    <div class="brow"><div><div class="brow-l">Payoff timeline</div></div><div class="brow-r" style="color:var(--green)">~16 months</div></div>
+    <div class="brow"><div><div class="brow-l">Total interest paid</div></div><div class="brow-r" style="color:var(--gold)">~$1,050</div></div>
+    <div class="brow"><div><div class="brow-l">Interest if paying minimum only</div></div><div class="brow-r" style="color:var(--red)">$3,200+</div></div>
+  </div>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bnav">
+  <button class="nb active" onclick="go('home')" id="nav-home"><div class="nb-i">🏠</div>Home</button>
+  <button class="nb" onclick="go('paycheck')" id="nav-paycheck"><div class="nb-i">💵</div>Paycheck</button>
+  <button class="nb" onclick="go('debts')" id="nav-debts"><div class="nb-i">📊</div>Debts</button>
+  <button class="nb" onclick="go('budget')" id="nav-budget"><div class="nb-i">📋</div>Budget</button>
+  <button class="nb" onclick="go('strategy')" id="nav-strategy"><div class="nb-i">🎯</div>Strategy</button>
+</div>
+
+<script>
+// Date
+const d = new Date();
+const opts = {weekday:'short',month:'short',day:'numeric',year:'numeric'};
+document.getElementById('today').innerHTML = d.toLocaleDateString('en-US',opts) + '<br><span style="font-size:10px;color:var(--muted)">Next pay: Apr 24</span>';
+
+// Tab navigation
+const navMap = {home:0,paycheck:1,debts:2,budget:3,strategy:4};
+function go(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(n=>n.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  document.querySelectorAll('.tab')[navMap[name]].classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// Checklist
+const LS = localStorage;
+function chk(id, progId, total){
+  const el = document.getElementById(id);
+  const btn = document.getElementById('btn-'+id);
+  const isDone = el.classList.contains('done');
+  if(isDone){ el.classList.remove('done'); btn.classList.remove('on'); }
+  else { el.classList.add('done'); btn.classList.add('on'); }
+  LS.setItem('chk-'+id, isDone ? '0':'1');
+  updateProg(progId, total);
+}
+function updateProg(progId, total){
+  const prefix = progId === 'home-prog' ? 'ha' : progId === 'pc-prog' ? 'pc' : '';
+  if(!prefix) return;
+  let done = 0;
+  for(let i=1;i<=total;i++){ if(LS.getItem('chk-'+prefix+i)==='1') done++; }
+  document.getElementById(progId).textContent = done + ' of ' + total;
+}
+
+// Debt balances
+const debts = {
+  jpmcb28: {orig:28, key:'bal-jpmcb28', pf:'pf-jpmcb28'},
+  sams: {orig:297, key:'bal-sams', pf:'pf-sams'},
+  jpmcb: {orig:5501, key:'bal-jpmcb', pf:'pf-jpmcb'},
+  sofi: {orig:27158, key:'bal-sofi', pf:'pf-sofi'},
+  car: {orig:27941, key:'bal-car', pf:'pf-car'}
+};
+
+function logPay(id, orig){
+  const inp = document.getElementById('pay-'+id);
+  const amt = parseFloat(inp.value);
+  if(!amt || amt <= 0){ inp.style.borderColor='var(--red)'; return; }
+  inp.style.borderColor='var(--border)';
+  const key = 'debt-'+id;
+  const cur = parseFloat(LS.getItem(key) || orig);
+  const newBal = Math.max(0, cur - amt);
+  LS.setItem(key, newBal);
+  updateDebtDisplay();
+  inp.value = '';
+}
+
+function updateDebtDisplay(){
+  let total = 0;
+  Object.keys(debts).forEach(id=>{
+    const d = debts[id];
+    const bal = parseFloat(LS.getItem('debt-'+id) || d.orig);
+    total += bal;
+    const el = document.getElementById(d.key);
+    if(el) el.textContent = '$' + bal.toLocaleString('en-US',{maximumFractionDigits:0});
+    const pf = document.getElementById(d.pf);
+    if(pf){ const pct = Math.max(0, ((d.orig - bal) / d.orig) * 100); pf.style.width = pct + '%'; }
+  });
+  const dt = document.getElementById('debt-total');
+  if(dt) dt.textContent = '$' + total.toLocaleString('en-US',{maximumFractionDigits:0});
+  const fw = document.getElementById('focus-debt');
+  if(fw) fw.textContent = '$' + total.toLocaleString('en-US',{maximumFractionDigits:0});
+}
+
+// Init
+function init(){
+  ['ha1','ha2','ha3','ha4','pc1','pc2','pc3','pc4','pc5'].forEach(id=>{
+    if(LS.getItem('chk-'+id)==='1'){
+      document.getElementById(id)?.classList.add('done');
+      document.getElementById('btn-'+id)?.classList.add('on');
+    }
+  });
+  updateProg('home-prog',4);
+  updateProg('pc-prog',5);
+  updateDebtDisplay();
+}
+init();
+</script>
+</body>
+</html>
